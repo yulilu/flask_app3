@@ -6,7 +6,7 @@ import requests
 import json
 from slackeventsapi import SlackEventAdapter
 SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
-SLACK_BOT_TOKEN = 'xoxb-3967341434739-4908753847316-IEHsQ3LkMdRnpsS2aXB1Dm1F'
+SLACK_BOT_TOKEN = 'xoxb-3967341434739-4908753847316-kLUgpNeuPOdtMbbErULnE3DS'
 
 
 import logging
