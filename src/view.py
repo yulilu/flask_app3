@@ -6,7 +6,8 @@ import requests
 import json
 from slackeventsapi import SlackEventAdapter
 SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
-SLACK_BOT_TOKEN = 'xoxb-3967341434739-4908753847316-fGqQ73tOpcX7j63RmiesWlCS'
+SLACK_BOT_TOKEN = 'xoxb-3967341434739-4908753847316-IEHsQ3LkMdRnpsS2aXB1Dm1F'
+
 
 import logging
 logging.basicConfig(
@@ -23,7 +24,7 @@ client = slack.WebClient(token=SLACK_BOT_TOKEN)
 # ボットのユーザーIDを取得
 BOT_USER_ID = client.api_call("auth.test")['user_id']
 
-slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'',app)
+slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'/',app)
 
 @slack_event_adapter.on('message')
 def respond_message(payload):
