@@ -8,15 +8,14 @@ app = Flask(__name__)
 
 @app.route('/', methods = ['GET', 'POST'])
 def index():
-    #return '3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P'
-    #return render_template('index.html') #追加
-    #response = make_response('3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P')
-    #response.headers['Content-type'] = 'text/plain'
-    #return response
-    out = {
-        'challenge':'3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P'
-    }
-    return jsonify(out)
+    # Slackから送られてくるPOSTリクエストのBodyの内容を取得
+    json =  request.json
+    print(json)
+    # レスポンス用のJSONデータを作成
+    # 受け取ったchallengeのKey/Valueをそのまま返却する
+    d = {'challenge' : json["challenge"]}
+    # レスポンスとしてJSON化して返却
+    return jsonify(d)
 
 if __name__ == '__main__':
     app.run(debug=True)
