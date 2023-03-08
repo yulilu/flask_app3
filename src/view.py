@@ -1,9 +1,12 @@
 # coding: utf-8
 
-#　必要なモジュールのインポート
+import slack
 from flask import Flask, render_template, make_response, jsonify, request, Response
 import requests
 import json
+from slackeventsapi import SlackEventAdapter
+SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
+SLACK_BOT_TOKEN = 'xoxb-3967341434739-4908753847316-hGvmqsRA7VTd3seUuGbHzq0E'
 
 import logging
 logging.basicConfig(
@@ -15,52 +18,29 @@ logging.basicConfig(
 # app という変数でFlaskオブジェクトをインスタンス化
 app = Flask(__name__)
 
-@app.route('/', methods = ['GET', 'POST'])
-def index():
-    #logging.debug('request.data=' + str(request.data))
-    #logging.debug('request.get_data=' + str(request.get_data()))
-    #print('request.data=' + str(request.data))
-    #print('request.get_data=' + str(request.get_data()))
-    
-    data = request.data.decode('utf-8')
-    data = json.loads(data)
-    # for challenge of slack api
-    if 'challenge' in data:
-        token = str(data['challenge'])
-        return Response(token, mimetype='text/plane')
-    # for events which you added
-    if 'event' in data:
-        print("get event")
-        event = data['event']
-        if 'user' in event:
-            print("user = ", event["user"])
-        if "text" in event:
-            print("text = ", event["text"])
-    return Response("nothing", mimetype='text/plane')
-    '''
-    json =  request.json
-    print(json)
-    d = {'challenge' : json["challenge"]}
-    return jsonify(d)
-    '''
-    '''
-    url = "https://slack.com/api/chat.postMessage"
-    token = "xoxb-3967341434739-4908753847316-hGvmqsRA7VTd3seUuGbHzq0E"# tokenを入れてください
+# トークンを指定してWebClientのインスタンスを生成
+client = slack.WebClient(token=SLACK_BOT_TOKEN)
+# ボットのユーザーIDを取得
+BOT_USER_ID = client.api_call("auth.test")['user_id']
 
-    header={
-        "Authorization": "Bearer {}".format(token)
-    }
+slack_event_adapter = SlackEventAdapter(
+    SLACK_SIGNING_SECRET,'/slack/events',app)
 
-    data  = {
-        "channel" : "C04SXDS7N2W",# Conversation IDを入れてください
-        "text" : "Hello World!"
-        }
-
-    res = requests.post(url, headers=header, json=data)
-
-    resonse_json = res.json()
-    print(resonse_json)
-    '''
+@slack_event_adapter.on('message')
+def respond_message(payload):
+    logging.debug('☆start')
+    # payloadの中の'event'に関する情報を取得し、もし空なら空のディクショナリ{}をあてがう
+    event = payload.get('event', {})
+    # 投稿のチャンネルID、ユーザーID、投稿内容を取得
+    channel_id = event.get('channel')
+    user_id = event.get('user')
+    text = event.get('text')
+ 
+    # もしボット以外の人からの投稿だった場合
+    if BOT_USER_ID != user_id:               
+        # chat_postMessageメソッドでオウム返しを実行
+        client.chat_postMessage(channel=channel_id, text=text)
+ 
 
 if __name__ == '__main__':
     app.run(debug=True)
