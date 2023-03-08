@@ -5,11 +5,20 @@ from flask import Flask, render_template, make_response, jsonify, request, Respo
 import requests
 import json
 
+import logging
+logging.basicConfig(
+    level=logging.DEBUG, # ログの出力レベルを指定します。DEBUG, INFO, WARNING, ERROR, CRITICALから選択できます。
+    format='%(asctime)s %(levelname)s %(message)s', # ログのフォーマットを指定します。
+    datefmt='%Y-%m-%d %H:%M:%S' # ログの日付時刻フォーマットを指定します。
+)
+
 # app という変数でFlaskオブジェクトをインスタンス化
 app = Flask(__name__)
 
 @app.route('/', methods = ['GET', 'POST'])
 def index():
+    logging.debug('request.data=' + str(request.data))
+    logging.debug('request.get_data=' + str(request.get_data()))
     print('request.data=' + str(request.data))
     print('request.get_data=' + str(request.get_data()))
     
