@@ -24,7 +24,7 @@ client = slack.WebClient(token=SLACK_BOT_TOKEN)
 BOT_USER_ID = client.api_call("auth.test")['user_id']
 
 slack_event_adapter = SlackEventAdapter(
-    SLACK_SIGNING_SECRET,'/slack/events',app)
+    SLACK_SIGNING_SECRET,'',app)
 
 @slack_event_adapter.on('message')
 def respond_message(payload):
