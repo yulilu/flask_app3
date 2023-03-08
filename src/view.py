@@ -17,10 +17,10 @@ app = Flask(__name__)
 
 @app.route('/', methods = ['GET', 'POST'])
 def index():
-    logging.debug('request.data=' + str(request.data))
-    logging.debug('request.get_data=' + str(request.get_data()))
-    print('request.data=' + str(request.data))
-    print('request.get_data=' + str(request.get_data()))
+    #logging.debug('request.data=' + str(request.data))
+    #logging.debug('request.get_data=' + str(request.get_data()))
+    #print('request.data=' + str(request.data))
+    #print('request.get_data=' + str(request.get_data()))
     
     data = request.data.decode('utf-8')
     data = json.loads(data)
