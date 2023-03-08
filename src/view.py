@@ -11,7 +11,8 @@ app = Flask(__name__)
 @app.route('/')
 # def以下がアクセス後の操作
 def index():
-    return render_template('index.html') #追加
+    return "3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P"
+    #return render_template('index.html') #追加
 
 if __name__ == '__main__':
     app.run()
