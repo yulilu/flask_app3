@@ -23,8 +23,7 @@ client = slack.WebClient(token=SLACK_BOT_TOKEN)
 # ボットのユーザーIDを取得
 BOT_USER_ID = client.api_call("auth.test")['user_id']
 
-slack_event_adapter = SlackEventAdapter(
-    SLACK_SIGNING_SECRET,'',app)
+slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'',app)
 
 @slack_event_adapter.on('message')
 def respond_message(payload):
