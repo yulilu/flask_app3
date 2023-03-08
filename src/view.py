@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # --- View側の設定 ---
 # ルートディレクトリにアクセスした場合の挙動
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 # def以下がアクセス後の操作
 def index():
     #return '3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P'
