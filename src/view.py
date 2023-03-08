@@ -1,7 +1,8 @@
 # coding: utf-8
 
 #　必要なモジュールのインポート
-from flask import Flask, render_template, make_response, requests, jsonify
+from flask import Flask, render_template, make_response, jsonify
+import requests
 
 # app という変数でFlaskオブジェクトをインスタンス化
 app = Flask(__name__)
