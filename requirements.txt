@@ -7,6 +7,11 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.1
 Werkzeug==2.1.2
-requests
-slackeventsapi
-slackclient
+#requests
+#slackeventsapi
+#slackclient
+transformers
+sentence_transformers
+fugashi
+ipadic
+pandas
