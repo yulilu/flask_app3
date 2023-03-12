@@ -1,14 +1,16 @@
 # coding: utf-8
 
-from flask import Flask, render_template
+import slack
+from flask import Flask, render_template, make_response, jsonify, request, Response
+import requests
+import json
+from slackeventsapi import SlackEventAdapter
+SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
+SLACK_BOT_TOKEN = ''
 
-from transformers import BertJapaneseTokenizer, BertModel
-from sentence_transformers import SentenceTransformer
-from sentence_transformers import models
-from scipy.special import eval_sh_legendre
-import torch
-import numpy as np
-import pandas as pd
+import os
+SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
+
 
 import logging
 logging.basicConfig(
@@ -17,51 +19,31 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S' # ログの日付時刻フォーマットを指定します。
 )
 
+# app という変数でFlaskオブジェクトをインスタンス化
 app = Flask(__name__)
 
+# トークンを指定してWebClientのインスタンスを生成
+client = slack.WebClient(token=SLACK_BOT_TOKEN)
+# ボットのユーザーIDを取得
+BOT_USER_ID = client.api_call("auth.test")['user_id']
 
-def sentence_to_vector(model, tokenizer, sentence):
-    tokens = tokenizer(sentence)["input_ids"]
-    input = torch.tensor(tokens).reshape(1,-1)
-    with torch.no_grad():
-        outputs = model(input, output_hidden_states=True)
-        last_hidden_state = outputs.last_hidden_state[0]
-        averaged_hidden_state = last_hidden_state.sum(dim=0) / len(last_hidden_state) 
-    return averaged_hidden_state
+slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'/',app)
 
-def calc_similarity(model, tokenizer, sentences, sentence2):
-    sentence_vector2 = sentence_to_vector(model, tokenizer, sentence2)
-    scores = []
-    for sentence in sentences:
-            sentence_vector1 = sentence_to_vector(model, tokenizer, sentence)
-            scores.append(torch.nn.functional.cosine_similarity(sentence_vector1, sentence_vector2, dim=0).detach().numpy().copy())
-    return scores
-
-
-@app.route('/')
-def index():
-    logging.debug('☆ start')
-    MODEL_NAME = 'cl-tohoku/bert-base-japanese-whole-word-masking'
-    tokenizer = BertJapaneseTokenizer.from_pretrained(MODEL_NAME)
-    model = BertModel.from_pretrained(MODEL_NAME)
-
-    logging.debug('☆ checkpoint-1')
-    #df = pd.read_csv('src\\chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
-    df = pd.read_csv('chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
-    sentences = []
-    answers = []
-    for row in df.itertuples():
-        sentences.append(row[4])
-        answers.append(row[5])
-
-    input_sentence="PulseSecureが開かないこととMerQNetが開かない"
-    logging.debug('☆ checkpoint-2')
-    scores = calc_similarity(model, tokenizer, sentences, input_sentence)
-    logging.debug('☆ checkpoint-3')
-
-
-    return render_template('index.html')
-
+@slack_event_adapter.on('message')
+def respond_message(payload):
+    logging.debug('☆start')
+    # payloadの中の'event'に関する情報を取得し、もし空なら空のディクショナリ{}をあてがう
+    event = payload.get('event', {})
+    # 投稿のチャンネルID、ユーザーID、投稿内容を取得
+    channel_id = event.get('channel')
+    user_id = event.get('user')
+    text = event.get('text')
+ 
+    # もしボット以外の人からの投稿だった場合
+    if BOT_USER_ID != user_id:               
+        # chat_postMessageメソッドでオウム返しを実行
+        client.chat_postMessage(channel=channel_id, text=text)
+ 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
