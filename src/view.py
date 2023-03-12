@@ -38,7 +38,8 @@ def index():
     tokenizer = BertJapaneseTokenizer.from_pretrained(MODEL_NAME)
     model = BertModel.from_pretrained(MODEL_NAME)
 
-    df = pd.read_csv('src\\chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
+    #df = pd.read_csv('src\\chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
+    df = pd.read_csv('chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
     sentences = []
     answers = []
     for row in df.itertuples():
