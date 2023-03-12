@@ -10,6 +10,12 @@ import torch
 import numpy as np
 import pandas as pd
 
+import logging
+logging.basicConfig(
+    level=logging.DEBUG, # ログの出力レベルを指定します。DEBUG, INFO, WARNING, ERROR, CRITICALから選択できます。
+    format='%(asctime)s %(levelname)s %(message)s', # ログのフォーマットを指定します。
+    datefmt='%Y-%m-%d %H:%M:%S' # ログの日付時刻フォーマットを指定します。
+)
 
 app = Flask(__name__)
 
@@ -34,10 +40,12 @@ def calc_similarity(model, tokenizer, sentences, sentence2):
 
 @app.route('/')
 def index():
+    logging.debug('☆ start')
     MODEL_NAME = 'cl-tohoku/bert-base-japanese-whole-word-masking'
     tokenizer = BertJapaneseTokenizer.from_pretrained(MODEL_NAME)
     model = BertModel.from_pretrained(MODEL_NAME)
 
+    logging.debug('☆ checkpoint-1')
     #df = pd.read_csv('src\\chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
     df = pd.read_csv('chatbot.csv',header=0,names=['No','Category', 'Title', 'question', 'answer'])
     sentences = []
@@ -47,7 +55,9 @@ def index():
         answers.append(row[5])
 
     input_sentence="PulseSecureが開かないこととMerQNetが開かない"
+    logging.debug('☆ checkpoint-2')
     scores = calc_similarity(model, tokenizer, sentences, input_sentence)
+    logging.debug('☆ checkpoint-3')
 
 
     return render_template('index.html')
