@@ -1,6 +1,12 @@
 # coding: utf-8
 
-from flask import Flask, render_template
+import os
+import requests
+import json
+
+import slack
+from flask import Flask, render_template, make_response, jsonify, request, Response
+from slackeventsapi import SlackEventAdapter
 
 from transformers import BertJapaneseTokenizer, BertModel
 from sentence_transformers import SentenceTransformer
@@ -10,6 +16,12 @@ import torch
 import numpy as np
 import pandas as pd
 
+
+SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
+SLACK_BOT_TOKEN = ''
+SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
+
+
 import logging
 logging.basicConfig(
     level=logging.DEBUG, # ログの出力レベルを指定します。DEBUG, INFO, WARNING, ERROR, CRITICALから選択できます。
@@ -17,7 +29,13 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S' # ログの日付時刻フォーマットを指定します。
 )
 
+
 app = Flask(__name__)
+
+
+client = slack.WebClient(token=SLACK_BOT_TOKEN)
+BOT_USER_ID = client.api_call("auth.test")['user_id']
+slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'/',app)
 
 
 def sentence_to_vector(model, tokenizer, sentence):
@@ -38,9 +56,15 @@ def calc_similarity(model, tokenizer, sentences, sentence2):
     return scores
 
 
-@app.route('/')
-def index():
-    logging.debug('☆ start')
+@slack_event_adapter.on('message')
+def respond_message(payload):
+    logging.debug('☆start')
+    event = payload.get('event', {})
+    channel_id = event.get('channel')
+    user_id = event.get('user')
+    text = event.get('text')
+
+ 
     MODEL_NAME = 'cl-tohoku/bert-base-japanese-whole-word-masking'
     tokenizer = BertJapaneseTokenizer.from_pretrained(MODEL_NAME)
     model = BertModel.from_pretrained(MODEL_NAME)
@@ -60,8 +84,9 @@ def index():
     logging.debug('☆ checkpoint-3')
 
 
-    return render_template('index.html')
-
+    if BOT_USER_ID != user_id:               
+        client.chat_postMessage(channel=channel_id, text=text)
+ 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

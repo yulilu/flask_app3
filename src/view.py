@@ -1,49 +1,24 @@
 # coding: utf-8
 
-import slack
-from flask import Flask, render_template, make_response, jsonify, request, Response
-import requests
-import json
-from slackeventsapi import SlackEventAdapter
-SLACK_SIGNING_SECRET = '6f1a03ac213789637ea8b8169c998487'
-SLACK_BOT_TOKEN = ''
+from flask import Flask, render_template
 
-import os
-SLACK_BOT_TOKEN = os.getenv('SLACK_BOT_TOKEN')
-
-
-import logging
-logging.basicConfig(
-    level=logging.DEBUG, # ログの出力レベルを指定します。DEBUG, INFO, WARNING, ERROR, CRITICALから選択できます。
-    format='%(asctime)s %(levelname)s %(message)s', # ログのフォーマットを指定します。
-    datefmt='%Y-%m-%d %H:%M:%S' # ログの日付時刻フォーマットを指定します。
-)
-
-# app という変数でFlaskオブジェクトをインスタンス化
+# appという変数名で Flask オブジェクトをインスタンス化
 app = Flask(__name__)
 
-# トークンを指定してWebClientのインスタンスを生成
-client = slack.WebClient(token=SLACK_BOT_TOKEN)
-# ボットのユーザーIDを取得
-BOT_USER_ID = client.api_call("auth.test")['user_id']
+# --- View側の設定 ---
 
-slack_event_adapter = SlackEventAdapter(SLACK_SIGNING_SECRET,'/',app)
+# rootディレクトリにアクセスした場合の挙動
+@app.route('/')
 
-@slack_event_adapter.on('message')
-def respond_message(payload):
-    logging.debug('☆start')
-    # payloadの中の'event'に関する情報を取得し、もし空なら空のディクショナリ{}をあてがう
-    event = payload.get('event', {})
-    # 投稿のチャンネルID、ユーザーID、投稿内容を取得
-    channel_id = event.get('channel')
-    user_id = event.get('user')
-    text = event.get('text')
- 
-    # もしボット以外の人からの投稿だった場合
-    if BOT_USER_ID != user_id:               
-        # chat_postMessageメソッドでオウム返しを実行
-        client.chat_postMessage(channel=channel_id, text=text)
- 
+# def以下がアクセス後の操作
+def index():
+    # DBから以下の変数を読み込んできたと仮定
+    title_ = 'ようこそ'
+    message_ = 'MTVデザインパターンでWebアプリ作成'
 
+    # return 'Hello World!'
+    return render_template('index.html', title=title_, message=message_)
+
+# メイン関数
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
